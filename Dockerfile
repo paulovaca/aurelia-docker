@@ -5,8 +5,12 @@ RUN apk add --no-cache git ca-certificates nodejs npm
 
 WORKDIR /build
 
-# Clone Aurelia source
-RUN git clone --depth 1 https://github.com/Lordymine/aurelia.git .
+# Clone Aurelia source at a known-good commit
+# (upstream main is currently broken — missing bootstrapStepAssistant symbols
+#  after the "remove dead code stubs" refactor on 2026-03-23)
+ARG AURELIA_REF=f5e89b0
+RUN git clone https://github.com/Lordymine/aurelia.git . && \
+    git checkout ${AURELIA_REF}
 
 # Build TS bridge (embedded into Go binary via go:embed)
 RUN if [ -d bridge ] && [ -f bridge/package.json ]; then \
