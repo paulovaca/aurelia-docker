@@ -8,7 +8,7 @@ WORKDIR /build
 # Clone Aurelia source at a known-good commit
 # (upstream main is currently broken — missing bootstrapStepAssistant symbols
 #  after the "remove dead code stubs" refactor on 2026-03-23)
-ARG AURELIA_REF=f5e89b0
+ARG AURELIA_REF=b0ae6d2
 RUN git clone https://github.com/Lordymine/aurelia.git . && \
     git checkout ${AURELIA_REF}
 
