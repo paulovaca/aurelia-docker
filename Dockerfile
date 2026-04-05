@@ -94,12 +94,11 @@ RUN npm install -g @anthropic-ai/claude-code
 COPY --from=builder /out/aurelia /usr/local/bin/aurelia
 RUN chmod +x /usr/local/bin/aurelia
 
-# Non-root user
-RUN adduser -D -u 1000 -h /home/aurelia aurelia
-USER aurelia
-WORKDIR /home/aurelia
+# Use the pre-existing `node` user (UID 1000) from node:22-alpine
+USER node
+WORKDIR /home/node
 
-VOLUME ["/home/aurelia/.aurelia"]
+VOLUME ["/home/node/.aurelia"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["aurelia"]
