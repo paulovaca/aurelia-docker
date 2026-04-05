@@ -37,7 +37,7 @@ EOF
 RUN python3 <<'PYEOF'
 import pathlib
 
-# --- Patch 1 ---
+# --- Patch 1: removed bootstrapStepAssistant symbols ---
 p = pathlib.Path('internal/telegram/input_pipeline.go')
 s = p.read_text()
 old1 = ("\tif state, ok := bc.popPendingBootstrap(c.Sender().ID); ok {\n"
@@ -55,7 +55,7 @@ assert old1 in s, 'PATCH 1 anchor not found'
 p.write_text(s.replace(old1, new1))
 print('PATCH 1 applied')
 
-# --- Patch 2 ---
+# --- Patch 2: NewBridgeCronRuntime missing MemoryStore arg ---
 p = pathlib.Path('cmd/aurelia/app.go')
 s = p.read_text()
 old2 = ("\tcronRuntime := cron.NewBridgeCronRuntime(\n"
@@ -72,6 +72,19 @@ new2 = ("\tcronRuntime := cron.NewBridgeCronRuntime(\n"
 assert old2 in s, 'PATCH 2 anchor not found'
 p.write_text(s.replace(old2, new2))
 print('PATCH 2 applied')
+
+# --- Patch 3: setup.go writes bundle.ts but app.go looks for bundle.js ---
+# The bridge auto-setup writes the embedded TS source as bundle.ts, but
+# setupBridge then checks for bundle.js — never finds it — and falls back
+# to `npx tsx index.ts` which doesn't exist in the bridge dir.
+# Fix: make app.go look for bundle.ts (matching what setup.go actually writes).
+p = pathlib.Path('cmd/aurelia/app.go')
+s = p.read_text()
+old3 = 'bundlePath := filepath.Join(bridgeDir, "bundle.js")'
+new3 = 'bundlePath := filepath.Join(bridgeDir, "bundle.ts")'
+assert old3 in s, 'PATCH 3 anchor not found'
+p.write_text(s.replace(old3, new3))
+print('PATCH 3 applied')
 PYEOF
 
 # Build TS bridge (embedded into Go binary via go:embed)
